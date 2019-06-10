@@ -1,0 +1,45 @@
+main {
+    margin: 0 auto;
+    width: 70%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-gap: 20px;
+}
+
+.botao-som {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    border-radius: 100px;
+}
+
+.botao-rec {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    border-radius: 100px;
+}
+.botao-rec:active {
+    background-color: darkgreen;
+}
+
+.botao-play:active {
+    background-color: brown;
+}
+
+.botao-play {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    background-color: purple;
+    border-radius: 100px;
+}
+
+.botoes-controle {
+    margin-top:50px;
+}
+
+.botao-som:active {
+    background-color: darkred;
+}
