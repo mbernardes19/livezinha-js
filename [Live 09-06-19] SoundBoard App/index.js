@@ -3,22 +3,18 @@ const botaoRec = document.querySelector('.botao-rec');
 const botaoPlay = document.querySelector('.botao-play');
 const audios = document.querySelectorAll('audio');
 let gravando = false;
-let eventos = [];
-
-Array.from(audios).map((audio) => {
-    audio.preload = true;
-});
+let sons = [];
 
 Array.from(botoes).map((botao) => {
-    botao.addEventListener('click', (e) => {
+    botao.addEventListener('click', (e) => {       // EVENTO QUE FAZ SOM TOCAR AO CLICAR
         const audio = botao.firstElementChild;
         audio.play();
-        console.log(audio.play());
+
         if(gravando) {
-            eventos.push(e);
+            sons.push(audio);
         }
     });
-    botao.addEventListener('dblclick', () => {
+    botao.addEventListener('dblclick', (e) => {   // EVENTO QUE FAZ SOM TOCAR EM LOOP AO CLICAR
         const audio = botao.firstElementChild;
         if (audio.loop) {
             audio.loop = false;
@@ -28,11 +24,11 @@ Array.from(botoes).map((botao) => {
             audio.play();
         }
     });
-})
+});
 
-botaoRec.addEventListener('click', () => {
-    if(gravando == false && eventos.length > 0) {
-        eventos.splice(0,eventos.length);
+botaoRec.addEventListener('click', () => {  // EVENTO QUE FAZ ENTRA EM MODO DE GRAVAÇÃO
+    if(gravando == false && sons.length > 0) {
+        sons.splice(0,sons.length);
     }
     
     if (gravando) {
@@ -43,28 +39,21 @@ botaoRec.addEventListener('click', () => {
     }
 })
 
+botaoPlay.addEventListener('click', () => { // EVENTO QUE FAZ SONS GRAVADOS TOCAREM EM SEQUÊNCIA
+    sons[0].currentTime = 0;
+    sons[0].play();
 
-function wait(ms) {
-    var start = Date.now(),
-        now = start;
-    while (now - start < ms) {
-        now = Date.now();
+    for(let i = 0; i < sons.length; i++) {
+        if(sons[i+1] !== undefined) {
+            sons[i].addEventListener('ended', () => {
+                sons[i+1].play();
+            });
+        }   
     }
-}
+}); 
 
-botaoPlay.addEventListener('click', executar);
 
-async function executar() {
-    console.log(eventos);
-    eventos.map((evento) => {
-        evento.target.firstElementChild.currentTime = 0;
-        evento.target.dispatchEvent(evento);
-        if(evento.target.firstElementChild.currentTime == evento.target.firstElementChild.duration) {
-            evento.target.firstElementChild.currentTime = 0;
-        }
-        wait(evento.target.firstElementChild.duration*1000);
-    })
-}
+    
 
 
 
