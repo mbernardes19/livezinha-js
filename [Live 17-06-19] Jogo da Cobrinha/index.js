@@ -1,6 +1,6 @@
 // ====== CONFIGURAÇÃO E VARIÁVEIS DO CANVAS
-const CANVAS_WIDTH = document.documentElement.clientWidth;
-const CANVAS_HEIGHT = document.documentElement.clientHeight;
+const CANVAS_WIDTH = document.documentElement.clientWidth-15;
+const CANVAS_HEIGHT = document.documentElement.clientHeight-15;
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -11,7 +11,7 @@ canvas.style.backgroundColor = 'white';
 
 // ====== VARIÁVEIS GLOBAIS
 let tamanho = 5;
-let cobra = [{x: CANVAS_WIDTH/2, y: CANVAS_HEIGHT/2}];
+let cobra = [{x: CANVAS_WIDTH/2 - (CANVAS_WIDTH/2 % 20), y: CANVAS_HEIGHT/2 - (CANVAS_HEIGHT/2 % 20)}];
 let dX = 20;
 let dY = 0;
 let movendoDir = true;
@@ -23,7 +23,40 @@ let limiteBaixo = false;
 let limiteDir = false;
 let limiteEsq = false;
 let isGameOver = false;
+let randomX = Math.ceil((Math.random()*CANVAS_WIDTH));
+let randomY = Math.ceil((Math.random()*CANVAS_HEIGHT));
+let comidaX =  randomX - randomX % 20;
+let comidaY = randomY - randomY % 20;
 // ===========================
+
+// ====== ELEMENTOS DO HTML
+const game_over = document.getElementById('game-over');
+const botaoSim = document.getElementById('sim');
+const botaoNao = document.getElementById('nao');
+
+
+
+
+
+// ==========================
+
+// ====== EVENT LISTENERS
+botaoSim.addEventListener('click', () => {
+    reset();
+    game_over.style.display = 'none';
+});
+
+botaoNao.addEventListener('click', () => {
+    limparTela();
+    game_over.style.display = 'none';
+    ctx.font = '16px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign='center'; // Todos os textos estão centralizados por causa dessa bagaça aqui
+    ctx.fillText('VOÇE PERDEL, OTARIL',CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+});
+
+
+// ========================
 
 // ====== EVENT LISTENER PARA TECLAS
 window.addEventListener('keydown', (e) => {
@@ -71,6 +104,7 @@ mover();
 setInterval(() => {
     if(!isGameOver){
         mover();
+        gerarComida();
     }
 },200);
 //========================
@@ -104,13 +138,15 @@ function checarLimite(){
 }
 
 function gameOver(){
-    const gameOver = document.getElementById('game-over');
-    gameOver.style.display = 'block';
-    gameOver.style.top = CANVAS_HEIGHT/2+'px';
-    gameOver.style.left = CANVAS_WIDTH/2+'px';
+    const game_over = document.getElementById('game-over');
+    game_over.style.display = 'block';
+    game_over.style.top = CANVAS_HEIGHT/2+'px';
+    game_over.style.left = CANVAS_WIDTH/2+'px';
 }
 
 function reset(){
+    isGameOver = false;
+    limparTela();
     cobra = [{x: CANVAS_WIDTH/2, y: CANVAS_HEIGHT/2}];
     criarCobra();
     desenharCobra();
@@ -148,8 +184,30 @@ function mover() {
         isGameOver = true;
         gameOver();
     }
-    
-    
+}
 
+function colisaoComidaCobra(){
+    return cobra[0].x === comidaX && cobra[0].y === comidaY;
+}
+
+function desenharComida(){
+    ctx.strokeStyle='yellow';
+    ctx.fillStyle='red';
+    ctx.fillRect(comidaX,comidaY,20,20);    
+    ctx.strokeRect(comidaX,comidaY,20,20);    
+}
+
+function gerarComida() {
+    console.log(colisaoComidaCobra());
+    if(colisaoComidaCobra()) {
+        const randomX = Math.trunc((Math.random()*CANVAS_WIDTH));
+        const randomY = Math.trunc((Math.random()*CANVAS_HEIGHT));
+        comidaX = randomX - randomX % 20;
+        comidaY = randomY - randomY % 20;
+
+        cobra.push({x:cobra[cobra.length-1].x, y:cobra[cobra.length-1].y});
+        desenharCobra();
+    }
+    desenharComida();
 }
 // =========================
