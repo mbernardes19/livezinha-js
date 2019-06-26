@@ -1,11 +1,12 @@
 // ====== CONFIGURAÇÃO E VARIÁVEIS DO CANVAS
-const CANVAS_WIDTH = document.documentElement.clientWidth-15;
-const CANVAS_HEIGHT = document.documentElement.clientHeight-15;
+const CANVAS_WIDTH = document.documentElement.clientWidth;
+const CANVAS_HEIGHT = document.documentElement.clientHeight;
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 canvas.setAttribute('width', CANVAS_WIDTH);
 canvas.setAttribute('height', CANVAS_HEIGHT);
+canvas.style.border = "1px solid black";
 canvas.style.backgroundColor = 'white';
 // =======================================
 
@@ -103,10 +104,16 @@ mover();
 
 setInterval(() => {
     if(!isGameOver){
+        if(colisaoCobra()) {
+            isGameOver = true;
+            gameOver();
+            return;
+        }
         mover();
         gerarComida();
+        
     }
-},200);
+},100);
 //========================
 
 //========== FUNÇÕES
@@ -134,6 +141,43 @@ function checarLimite(){
     }
     else {
         return true;
+    }
+}
+
+function colisaoCobra() {
+    let dx = 0;
+    let dy = 0;
+    let contador = 0;
+    if(contador < 1) {
+        if(movendoCima){
+            dx = 0;
+            dy = -20;
+        }
+        if(movendoBaixo){
+            dx = 0;
+            dy = 20;
+        }
+        if(movendoDir){
+            dx = 20;
+            dy = 0;
+        }
+        if(movendoEsq){
+            dx = -20;
+            dy = 0;
+        }
+        contador ++
+    }
+    const result = cobra.filter((parte, i) => {
+        if(i+1 <= cobra.length-1){
+            return cobra[0].x === cobra[i+1].x && cobra[0].y === cobra[i+1].y;
+        }
+    });
+
+    if(result.length !== 0) {
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
