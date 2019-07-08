@@ -1,17 +1,17 @@
 // ====== CONFIGURAÇÃO E VARIÁVEIS DO CANVAS
-const CANVAS_WIDTH = document.documentElement.clientWidth;
-const CANVAS_HEIGHT = document.documentElement.clientHeight;
+const CANVAS_WIDTH = document.documentElement.clientWidth - document.documentElement.clientWidth % 20;
+const CANVAS_HEIGHT = document.documentElement.clientHeight - document.documentElement.clientHeight % 20;
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 canvas.setAttribute('width', CANVAS_WIDTH);
 canvas.setAttribute('height', CANVAS_HEIGHT);
 canvas.style.border = "1px solid black";
-canvas.style.backgroundColor = 'white';
+canvas.style.backgroundColor = "rgba(255,0,0,0.5)";
 // =======================================
 
 // ====== VARIÁVEIS GLOBAIS
-let tamanho = 5;
+let tamanho = 2;
 let cobra = [{x: CANVAS_WIDTH/2 - (CANVAS_WIDTH/2 % 20), y: CANVAS_HEIGHT/2 - (CANVAS_HEIGHT/2 % 20)}];
 let dX = 20;
 let dY = 0;
@@ -26,8 +26,10 @@ let limiteEsq = false;
 let isGameOver = false;
 let randomX = Math.ceil((Math.random()*CANVAS_WIDTH));
 let randomY = Math.ceil((Math.random()*CANVAS_HEIGHT));
-let comidaX =  randomX - randomX % 20;
+let comidaX = randomX - randomX % 20;
 let comidaY = randomY - randomY % 20;
+let pontuacao = 0;
+let velocidade = 200;
 // ===========================
 
 // ====== ELEMENTOS DO HTML
@@ -53,7 +55,8 @@ botaoNao.addEventListener('click', () => {
     ctx.font = '16px Arial';
     ctx.fillStyle = 'black';
     ctx.textAlign='center'; // Todos os textos estão centralizados por causa dessa bagaça aqui
-    ctx.fillText('VOÇE PERDEL, OTARIL',CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+    const textoPerdedor = 'VOÇE PERDEL, OTARIL\nPONTUAÇÃO: ' + pontuacao;
+    fillTextMultiLine(ctx, textoPerdedor, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
 });
 
 
@@ -61,7 +64,6 @@ botaoNao.addEventListener('click', () => {
 
 // ====== EVENT LISTENER PARA TECLAS
 window.addEventListener('keydown', (e) => {
-    console.log(e);
     if(e.code === "ArrowUp" && !movendoBaixo){
         dX = 0;
         dY = -20;
@@ -98,11 +100,26 @@ window.addEventListener('keydown', (e) => {
 // ==========================
 
 //====== EXECUÇÃO DO JOGO
+ctx.fillStyle = "rgba(255,0,0,0.5)";
+ctx.fillRect(0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
+setarPontuacao();
 criarCobra();
 desenharCobra();
 mover();
 
-setInterval(() => {
+let gameloop = '';
+
+if (gameloop) {
+    velocidade = 200;
+    clearInterval(gameloop);
+}
+
+gameloop = setInterval(gameLoop,velocidade);
+
+//========================
+
+//========== FUNÇÕES
+function gameLoop() {
     if(!isGameOver){
         if(colisaoCobra()) {
             isGameOver = true;
@@ -111,33 +128,62 @@ setInterval(() => {
         }
         mover();
         gerarComida();
-        
     }
-},100);
-//========================
+}
 
-//========== FUNÇÕES
+
+function fillTextMultiLine(ctx, text, x, y) {
+    var lineHeight = ctx.measureText("M").width * 2;
+    var lines = text.split("\n");
+    for (var i = 0; i < lines.length; ++i) {
+      ctx.fillText(lines[i], x, y);
+      y += lineHeight;
+    }
+  }
+
 function checarLimite(){
 
     if(cobra[0].y <= 0){
-        limiteCima = true;
-        movendoCima = false;
-        return false;
+        if(movendoCima === true) {
+            limiteCima = true;
+            movendoCima = false;
+            return false;
+        }
+        else {
+            return true;
+        }
     }
-    if(cobra[0].y >= CANVAS_HEIGHT-50){
-        limiteBaixo = true;
-        movendoBaixo = false;
-        return false;
+    if(cobra[0].y >= CANVAS_HEIGHT-20){
+        if(movendoBaixo === true) {
+            limiteBaixo = true;
+            movendoBaixo = false;
+            return false;
+        }
+        else {
+            return true;
+        }
+        
     }
     if(cobra[0].x <= 0){
-        limiteEsq = true;
-        movendoEsq = false;
-        return false;
+        if(movendoEsq === true) {
+            limiteEsq = true;
+            movendoEsq = false;
+            return false;
+        }
+        else {
+            return true;
+        }
+        
     }
-    if(cobra[0].x >= CANVAS_WIDTH-50){
-        limiteDir = true;
-        movendoDir = false;
-        return false;
+    if(cobra[0].x >= CANVAS_WIDTH-20){
+        if(movendoDir === true) {
+            limiteDir = true;
+            movendoDir = false;
+            return false;
+        }
+        else {
+            return true;
+        }
     }
     else {
         return true;
@@ -189,11 +235,31 @@ function gameOver(){
 }
 
 function reset(){
+    dX = 20;
+    dY = 0;
+    movendoEsq= false;
+    movendoCima = false;
+    movendoDir = true;
+    movendoBaixo = false;
     isGameOver = false;
     limparTela();
-    cobra = [{x: CANVAS_WIDTH/2, y: CANVAS_HEIGHT/2}];
+    cobra = [{x: CANVAS_WIDTH/2 - (CANVAS_WIDTH/2 % 20), y: CANVAS_HEIGHT/2 - (CANVAS_HEIGHT/2 % 20)}];
     criarCobra();
     desenharCobra();
+    const randomX = Math.trunc((Math.random()*CANVAS_WIDTH));
+    const randomY = Math.trunc((Math.random()*CANVAS_HEIGHT));
+    comidaX = randomX - randomX % 20;
+    comidaY = randomY - randomY % 20;
+    desenharComida();
+    pontuacao = 0;
+    setarPontuacao();
+
+    if (gameloop) {
+        velocidade = 200;
+        clearInterval(gameloop);
+    }
+
+    gameloop = setInterval(gameLoop,velocidade);
 }
 
 function desenharCobra() {
@@ -203,6 +269,11 @@ function desenharCobra() {
         ctx.fillRect(parte.x, parte.y, 20, 20);
         ctx.strokeRect(parte.x, parte.y, 20, 20)
     });
+}
+
+function setarPontuacao() {
+    const textoPontos = document.querySelector('#pontuacao p');
+    textoPontos.textContent = "Pontos: " + pontuacao;
 }
 
 function criarCobra() {
@@ -218,11 +289,12 @@ function limparTela(){
 }
 
 function mover() {
-    if(checarLimite()){
-        cobra.unshift({x:cobra[0].x+dX, y:cobra[0].y+dY});
-        cobra.pop();    
-        limparTela();
-        desenharCobra();
+    
+        if(checarLimite()){
+            cobra.unshift({x:cobra[0].x+dX, y:cobra[0].y+dY});
+            cobra.pop();    
+            limparTela();
+            desenharCobra();
     }
     else {
         isGameOver = true;
@@ -241,9 +313,19 @@ function desenharComida(){
     ctx.strokeRect(comidaX,comidaY,20,20);    
 }
 
+function atualizarPontos() {
+    pontuacao += 1;
+}
+
 function gerarComida() {
-    console.log(colisaoComidaCobra());
     if(colisaoComidaCobra()) {
+        if(velocidade > 10) {
+            velocidade = velocidade - 10;    
+        }
+        
+        clearInterval(gameloop);
+        gameloop = setInterval(gameLoop, velocidade);
+
         const randomX = Math.trunc((Math.random()*CANVAS_WIDTH));
         const randomY = Math.trunc((Math.random()*CANVAS_HEIGHT));
         comidaX = randomX - randomX % 20;
@@ -251,7 +333,9 @@ function gerarComida() {
 
         cobra.push({x:cobra[cobra.length-1].x, y:cobra[cobra.length-1].y});
         desenharCobra();
+        atualizarPontos();
+        setarPontuacao();
     }
     desenharComida();
 }
-// =========================
+// =========================f
